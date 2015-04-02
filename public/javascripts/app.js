@@ -282,6 +282,12 @@ var updateSeekPercentage = function($seekBar, event) {
      controller: 'Landing.controller',
      templateUrl: '/templates/landing.html'
    });
+
+   $stateProvider.state('song', {
+    url: '/song',
+    templateUrl: '/templates/song.html'
+   });
+   
  }]);
  
  // This is a cleaner way to call the controller than crowding it on the module definition.
