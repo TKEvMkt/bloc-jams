@@ -402,6 +402,14 @@ var updateSeekPercentage = function($seekBar, event) {
  blocJams.controller('PlayerBar.controller', ['$scope', 'SongPlayer', function($scope, SongPlayer) {
    $scope.songPlayer = SongPlayer;
 
+    $scope.volumeClass = function() {
+     return {
+       'fa-volume-off': SongPlayer.volume == 0,
+       'fa-volume-down': SongPlayer.volume <= 70 && SongPlayer.volume > 0,
+       'fa-volume-up': SongPlayer.volume > 70
+      }
+    }
+
       SongPlayer.onTimeUpdate(function(event, time){
           $scope.$apply(function(){
             $scope.playTime = time;
@@ -420,6 +428,7 @@ var updateSeekPercentage = function($seekBar, event) {
      currentSong: null,
      currentAlbum: null,
      playing: false,
+      volume: 90,
  
      play: function() {
        this.playing = true;
@@ -462,28 +471,62 @@ var updateSeekPercentage = function($seekBar, event) {
         }
       },
 
+      setVolume: function(volume) {
+        if(currentSoundFile) {
+          currentSoundFile.setVolume(volume);
+        }
+        this.volume = volume;
+        
+      },
+
+      mute: function() {
+
+        if(currentSoundFile) {
+          
+          if (this.volume == 0) {
+
+            // console.log (" it is zero");
+            this.volume = preservedVolume;
+
+          }
+            else {
+              // console.log ("nothing is changing");
+              preservedVolume = this.volume;
+              this.volume = 0;
+            }
+          console.log ("clicked");
+          console.log (preservedVolume);
+        }
+      },
+
+
+
       onTimeUpdate: function(callback) {
         return $rootScope.$on('sound:timeupdate', callback);
       },
+
+
       
-     setSong: function(album, song) {
-        if (currentSoundFile) {
-          currentSoundFile.stop();
-        }
-       this.currentAlbum = album;
-       this.currentSong = song;
+       setSong: function(album, song) {
+          if (currentSoundFile) {
+            currentSoundFile.stop();
+          }
+         this.currentAlbum = album;
+         this.currentSong = song;
 
-        currentSoundFile = new buzz.sound(song.audioUrl, {
-          formats: [ "mp3" ],
-          preload: true
-        });
-
-          currentSoundFile.bind('timeupdate', function(e){
-            $rootScope.$broadcast('sound:timeupdate', this.getTime());
+          currentSoundFile = new buzz.sound(song.audioUrl, {
+            formats: [ "mp3" ],
+            preload: true
           });
 
-        this.play();
-        }
+            currentSoundFile.setVolume(this.volume);
+
+            currentSoundFile.bind('timeupdate', function(e){
+              $rootScope.$broadcast('sound:timeupdate', this.getTime());
+            });
+
+          this.play();
+          }
       }
  }]);
 
